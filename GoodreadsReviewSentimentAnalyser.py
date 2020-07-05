@@ -6,7 +6,7 @@ from sqlite3 import Error
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyser = SentimentIntensityAnalyzer()
 
-"""
+"""    Scraping is disabled for now, since Goodreads has blocked me from scraping due to lots of requests
 #Start Scraping using BeautifulSoup
 reviewlinks = []
 page = requests.get('https://www.goodreads.com/book/show/44581530-dead-astronauts')
@@ -56,7 +56,7 @@ c.execute('DELETE FROM reviews')
 conn.commit()
 
 
-#Insert data into Table
+#Insert data into Table - since Goodreads has blocked me from scraping due to lots of requests
 rev=['Life of Pi','life is so beautiful that death has fallen in love with it - a jealous, possessive love that grabs at what it can and sometimes stories are so beautiful that souls have fallen in a love with them - a tender, quiet love that nurtures what it can. this is one of those stories. its a story that will always have a special place in my heart. its one of the only books that has ever made me re-evaluate my beliefs on faith, it helped me further realise the impact and importance of the connection between humans and animals, and it planted a seed of hope that life can be beautiful, even in the most harrowing of circumstances. this is the kind of story that will always teach life lessons, no matter at which age you read it and regardless of the amount of re-reads. you will always walk away from this book having learnt something new about life, the world, and about yourself. it is truly one of the most beautiful stories i have ever had the privilege of reading.',
 'Life of Pi','LITTLE INDIAN BOY GOES ON WEIRD BOAT RIDE WITH MEAN CAT.',
 'Life of Pi','On the surface, its the story of a 16 year old Indian boy named Pi who, when he and his zookeeping family decide to transplant themselves and some animals to Canada, ends up stranded on a lifeboat with a hyena, a zebra, an orangutan, and a 450-lb Bengal tiger named Richard Parker. Dont let the Rudyard Kipling-ness of the plot fool you! In reality, this book is an examination of faith in all its forms. Young Pi loves God, and to prove it he becomes Christian and Muslim in addition to his native Hinduism. He also loves animals, and much of the book examines animal psychology and its relationship to human psychology in a vibrant, interesting way.  This book had me asking questions about my life, my beliefs, and my society on just about every page....and when the reader gets to the end (which I wont spoil here), the reader is forced to ask themself the kind of person they really are. If ever there was a novel that could be called a litmus test, its this one. The Life of Pi will, at the very least, entertain through its sharp storytelling, but it can also help a reader examine how they see the world - and isnt that the point of great literature?',
