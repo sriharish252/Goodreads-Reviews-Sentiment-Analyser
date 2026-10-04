@@ -3,24 +3,21 @@
 ## Purpose:
 Derive an aggregate sentiment score of a book to gain a more accurate and objective measure of reader satisfaction, attained through textual analysis.
 
-## Stages of Execution:
+## How it works:
 - Scrapes reviews from the Goodreads website.
 - Inserts initial scraped data into an SQLite database.
 - Analyzes the reviews using VaderSentiment and normalizes the score between 1 to 10.
     (1 being most negative sentiment and 10 being most positive sentiment.)
 - Updates the sentiment scores in the database and prints it.
 
-## Prerequisites:
-```
-pip install requests  # HTTP library
-pip install beautifulsoup4    # For pulling data out of HTML and XML files
-pip install vaderSentiment    # For sentiment analysis of reviews
+## Run it
+
+```bash
+pip install -r requirements.txt
+python GoodreadsReviewSentimentAnalyser.py
 ```
 
-## Usage:
-- Replace the URL in page = requests.get('https://www.goodreads.com/book/show/44581530-dead-astronauts') with the URL of the desired book on Goodreads.
-- Run the script to scrape reviews and analyze sentiment.
-- Sentiment score interpretation: 1 being most negative sentiment and 10 being most positive sentiment.
+Live scraping is switched off because Goodreads rate-limits repeated requests. The script runs on 50 bundled sample reviews (10 each for five books) and prints every review with its sentiment score. The original scraper is kept in the script; to re-enable it, uncomment that block and set the book URL in the `requests.get(...)` call.
 
 ## Result:
 In manual testing of a select number of books, I identified misrepresented star ratings for 20% of the analyzed books.
