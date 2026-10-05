@@ -19,7 +19,7 @@ class Scorer(Protocol):
 class VaderScorer:
     """Lexicon and rule based: the compound polarity score, already in [-1, 1]."""
 
-    name = key = "vader"
+    name, key = "VADER", "vader"
 
     def __init__(self) -> None:
         self._analyser = SentimentIntensityAnalyzer()
@@ -31,7 +31,7 @@ class VaderScorer:
 class TransformerScorer:
     """A fine-tuned transformer: P(positive) - P(negative). Long reviews are cut to 512 tokens."""
 
-    name = "transformer"
+    name = "Transformer"
 
     def __init__(self, model: str, classify: Classifier | None = None, batch_size: int = 16):
         self.key = model
