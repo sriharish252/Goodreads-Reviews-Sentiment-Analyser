@@ -15,11 +15,17 @@ from goodreads_sentiment.analysis import ModelResult  # noqa: E402
 SURFACE, INK, INK_2, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
 WARMER, COLDER, AGREE, BAND = "#2a78d6", "#e34948", "#898781", "#f0efec"
 MAX_LABELS = 6
+DPI = 150  # labels are measured at this resolution, so draw and save at it
 
 
 def save_chart(results: Sequence[ModelResult], path: Path) -> Path:
     fig, axes = plt.subplots(
-        1, len(results), figsize=(6.4 * len(results), 5.2), squeeze=False, facecolor=SURFACE
+        1,
+        len(results),
+        figsize=(6.4 * len(results), 5.2),
+        dpi=DPI,
+        squeeze=False,
+        facecolor=SURFACE,
     )
     for ax, result in zip(axes[0], results, strict=True):
         _panel(ax, result)
@@ -36,8 +42,10 @@ def save_chart(results: Sequence[ModelResult], path: Path) -> Path:
         labelcolor=INK_2,
     )
     fig.tight_layout(rect=(0, 0.07, 1, 1))
+    for ax, result in zip(axes[0], results, strict=True):  # after layout, so positions are final
+        _label(ax, result)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=150, facecolor=SURFACE)
+    fig.savefig(path, dpi=DPI, facecolor=SURFACE)
     plt.close(fig)
     return path
 
@@ -74,17 +82,6 @@ def _panel(ax, result: ModelResult) -> None:
             zorder=3,
         )
 
-    for b in sorted(result.flagged, key=lambda b: -abs(b.divergence))[:MAX_LABELS]:
-        title = b.title if len(b.title) <= 30 else b.title[:29] + "…"
-        ax.annotate(
-            title,
-            (b.rating, b.sentiment),
-            xytext=(6, 6 if b.divergence > 0 else -12),
-            textcoords="offset points",
-            fontsize=8,
-            color=INK,
-        )
-
     share = f"{result.share_flagged:.0%}" if result.share_flagged is not None else "n/a"
     ax.set_title(
         f"{result.model}: {len(result.flagged)} of {len(books)} books diverge ({share}),"
@@ -104,6 +101,39 @@ def _panel(ax, result: ModelResult) -> None:
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color("#c3c2b7")
+
+
+def _label(ax, result: ModelResult) -> None:
+    """Name the most divergent books, keeping labels inside the panel and clear of each other."""
+    renderer = ax.figure.canvas.get_renderer()
+    right_edge = ax.get_window_extent(renderer).x1
+    placed = []
+    for b in sorted(result.flagged, key=lambda b: -abs(b.divergence))[:MAX_LABELS]:
+        point = (b.rating, b.sentiment)
+        title = b.title if len(b.title) <= 30 else b.title[:29] + "…"
+        dx = 6
+        dy, step = (6, 10) if b.divergence > 0 else (-12, -10)
+        text = ax.annotate(
+            title, point, (dx, dy), textcoords="offset points", fontsize=8, color=INK
+        )
+        if text.get_window_extent(renderer).x1 > right_edge:
+            dx = -6
+            text.set_horizontalalignment("right")
+        for _ in range(4 * MAX_LABELS):  # step away from the point until clear of earlier labels
+            text.set_position((dx, dy))
+            box = text.get_window_extent(renderer).padded(3)
+            if not any(box.overlaps(other) for other in placed):
+                break
+            dy += step
+        placed.append(box)
+        if abs(dy) > 12:  # moved away: draw a leader line back to the point
+            ax.annotate(
+                "",
+                point,
+                (dx, dy + 3),
+                textcoords="offset points",
+                arrowprops={"arrowstyle": "-", "color": MUTED, "lw": 0.6, "shrinkB": 3},
+            )
 
 
 def _key(marker: str, color: str, label: str) -> Line2D:
