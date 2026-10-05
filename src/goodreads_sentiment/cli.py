@@ -11,7 +11,13 @@ from goodreads_sentiment.analysis import ModelResult, agreement, compare
 from goodreads_sentiment.chart import save_chart
 from goodreads_sentiment.config import Settings, load_settings
 from goodreads_sentiment.db import ReviewStore
-from goodreads_sentiment.loaders import Review, limit_per_book, load_book_ratings, load_csv
+from goodreads_sentiment.loaders import (
+    Review,
+    limit_per_book,
+    load_book_ratings,
+    load_csv,
+    load_ucsd,
+)
 from goodreads_sentiment.scorers import Scorer, TransformerScorer, VaderScorer
 
 CHUNK = 256  # reviews scored and saved at a time, so an interrupted run keeps its progress
@@ -57,8 +63,17 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="analyse", description="Find books whose star ratings and review sentiment disagree."
     )
-    parser.add_argument("--input", type=Path, required=True, help="reviews CSV: book,rating,review")
-    parser.add_argument("--books", type=Path, help="CSV of published ratings: book,avg_rating")
+    parser.add_argument(
+        "--input",
+        type=Path,
+        required=True,
+        help="reviews CSV (book,rating,review) or UCSD goodreads_reviews_*.json.gz",
+    )
+    parser.add_argument(
+        "--books",
+        type=Path,
+        help="CSV of published ratings (book,avg_rating), or UCSD goodreads_books_*.json.gz",
+    )
     parser.add_argument("--model", choices=("vader", "transformer", "both"), default="vader")
     parser.add_argument("--min-reviews", type=int, default=10, help="skip books with fewer")
     parser.add_argument("--max-reviews", type=int, default=50, help="use at most this many/book")
@@ -66,7 +81,11 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _load(path: Path, books: Path | None) -> tuple[list[Review], dict[str, float]]:
-    return load_csv(path), load_book_ratings(books) if books else {}
+    if path.suffix == ".csv":
+        return load_csv(path), load_book_ratings(books) if books else {}
+    if books is None:
+        sys.exit("UCSD reviews need the matching books file: --books goodreads_books_*.json.gz")
+    return load_ucsd(path, books), {}
 
 
 def _scorers(model: str, settings: Settings) -> list[Scorer]:

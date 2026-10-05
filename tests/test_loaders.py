@@ -1,6 +1,12 @@
 import pytest
 
-from goodreads_sentiment.loaders import Review, limit_per_book, load_book_ratings, load_csv
+from goodreads_sentiment.loaders import (
+    Review,
+    limit_per_book,
+    load_book_ratings,
+    load_csv,
+    load_ucsd,
+)
 
 
 def test_sample_has_ten_unrated_reviews_for_each_of_five_books(sample_csv):
@@ -38,3 +44,14 @@ def test_limit_per_book_drops_small_books_and_caps_large_ones():
     kept = limit_per_book(reviews, min_reviews=2, max_reviews=3)
 
     assert [r.text for r in kept] == ["a0", "a1", "a2"]
+
+
+def test_ucsd_keeps_rated_english_reviews_grouped_by_work(ucsd_files):
+    reviews = load_ucsd(*ucsd_files)
+
+    assert reviews == [
+        Review("Leaves of Grass", "Glorious.", 5),
+        Review("Selected Poems [30]", "Uneven.", 2),
+        Review("Selected Poems [50]", "Lovely.", 4),
+        Review("Leaves of Grass", "Another edition, same work.", 4),
+    ]

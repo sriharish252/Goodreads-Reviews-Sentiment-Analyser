@@ -66,3 +66,23 @@ def test_without_ratings_there_is_no_chart(sample_csv, out, capsys):
 def test_min_reviews_filters_every_book_out(sample_csv, out):
     with pytest.raises(SystemExit, match="at least 11 reviews"):
         main(["--input", str(sample_csv), "--min-reviews", "11"])
+
+
+def test_ucsd_input_uses_reviewer_ratings(ucsd_files, out, capsys):
+    reviews, books = ucsd_files
+
+    main(["--input", str(reviews), "--books", str(books), "--min-reviews", "1"])
+
+    with (out / "summary.csv").open(encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert [r["book"] for r in rows] == [
+        "Leaves of Grass",
+        "Selected Poems [30]",
+        "Selected Poems [50]",
+    ]
+    assert {r["rating_source"] for r in rows} == {"reviews"}
+
+
+def test_ucsd_input_needs_the_books_file(ucsd_files, out):
+    with pytest.raises(SystemExit, match="--books"):
+        main(["--input", str(ucsd_files[0])])
