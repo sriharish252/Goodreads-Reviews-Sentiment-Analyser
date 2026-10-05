@@ -1,0 +1,37 @@
+[project]
+name = "goodreads-sentiment"
+version = "1.0.0"
+description = "Find books whose star ratings and review sentiment disagree"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["matplotlib==3.11.2", "vadersentiment==3.3.2"]
+
+[project.optional-dependencies]
+transformer = ["torch==2.14.1", "transformers==5.18.0"]
+
+[project.scripts]
+analyse = "goodreads_sentiment.cli:main"
+
+[dependency-groups]
+dev = ["pytest==9.1.1", "ruff==0.16.10"]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
