@@ -29,19 +29,9 @@ def save_chart(results: Sequence[ModelResult], path: Path) -> Path:
     )
     for ax, result in zip(axes[0], results, strict=True):
         _panel(ax, result)
-    fig.legend(
-        handles=[
-            _key("^", WARMER, "Reviews warmer than the stars"),
-            _key("v", COLDER, "Reviews colder than the stars"),
-            _key("o", AGREE, "Within 1 SD: ratings and reviews agree"),
-        ],
-        loc="lower center",
-        ncol=3,
-        frameon=False,
-        fontsize=9,
-        labelcolor=INK_2,
-    )
-    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    legend = _legend(fig)
+    bottom = legend.get_window_extent().height / fig.bbox.height
+    fig.tight_layout(rect=(0, bottom + 0.02, 1, 1))
     for ax, result in zip(axes[0], results, strict=True):  # after layout, so positions are final
         _label(ax, result)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,7 +98,7 @@ def _label(ax, result: ModelResult) -> None:
     renderer = ax.figure.canvas.get_renderer()
     right_edge = ax.get_window_extent(renderer).x1
     placed = []
-    for b in sorted(result.flagged, key=lambda b: -abs(b.divergence))[:MAX_LABELS]:
+    for b in sorted(result.compared, key=lambda b: -abs(b.divergence))[:MAX_LABELS]:
         point = (b.rating, b.sentiment)
         title = b.title if len(b.title) <= 30 else b.title[:29] + "…"
         dx = 6
@@ -134,6 +124,29 @@ def _label(ax, result: ModelResult) -> None:
                 textcoords="offset points",
                 arrowprops={"arrowstyle": "-", "color": MUTED, "lw": 0.6, "shrinkB": 3},
             )
+
+
+def _legend(fig):
+    """Put the key under the panels, in as many columns as fit across the figure."""
+    keys = [
+        _key("^", WARMER, "Reviews warmer than the stars"),
+        _key("v", COLDER, "Reviews colder than the stars"),
+        _key("o", AGREE, "Within 1 SD: ratings and reviews agree"),
+    ]
+    renderer = fig.canvas.get_renderer()
+    for ncol in range(len(keys), 0, -1):
+        legend = fig.legend(
+            # matplotlib fills columns first; reorder so the keys read across each row
+            handles=[k for i in range(ncol) for k in keys[i::ncol]],
+            loc="lower center",
+            ncol=ncol,
+            frameon=False,
+            fontsize=9,
+            labelcolor=INK_2,
+        )
+        if legend.get_window_extent(renderer).width <= 0.96 * fig.bbox.width or ncol == 1:
+            return legend
+        legend.remove()
 
 
 def _key(marker: str, color: str, label: str) -> Line2D:
