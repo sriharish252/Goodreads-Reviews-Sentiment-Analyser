@@ -54,6 +54,8 @@ It keeps English-language books with at least 10 rated reviews and uses up to 50
 
 ## Results
 
+### UCSD poetry
+
 909 poetry books and 23,895 reviews from the UCSD run above:
 
 | Model | Books that diverge | Rating vs sentiment, r |
@@ -69,7 +71,21 @@ Per review, the two models agree on polarity 79% of the time (r = 0.40).
 
 **The share that diverges mostly restates r.** Divergence is the difference of two standardised scores, so its spread is √(2 − 2r): the better a model's sentiment tracks the stars, the fewer books pass 1 SD (about 32% at r = 0.5 for normally distributed scores). Which books diverge, and why, is the useful output.
 
-**Compared with the original finding.** The first version of this project judged by hand that 20% of a handful of books had misrepresented star ratings. On 909 books with a stated method, the transformer flags 30%. The two aren't directly comparable: different books, and a relative threshold in place of a manual judgement.
+### Sample
+
+The five books in the [quick start](#quick-start), 10 reviews each, against their published average ratings:
+
+| Book | Stars | VADER | Divergence | Transformer | Divergence |
+|---|---|---|---|---|---|
+| Atonement | 3.96 | 0.47 | −0.28 | 0.81 | **+1.63** |
+| IT | 4.23 | −0.01 | **−3.62** | 0.06 | **−3.12** |
+| Life of Pi | 3.95 | 0.75 | +0.65 | 0.22 | −0.62 |
+| Origin | 3.90 | 0.77 | **+1.05** | 0.51 | +0.85 |
+| Short | 3.78 | 0.88 | **+2.21** | 0.41 | **+1.26** |
+
+Bold: |divergence| ≥ 1 SD. Each model flags 3 of the 5 books (r = −0.96 for VADER, −0.51 for the transformer), and they agree on polarity for 72% of reviews. *IT* is the only book both flag: its reviews average close to neutral against the highest rating of the five, likely because horror vocabulary reads as negative opinion.
+
+**Compared with the original finding.** The first version of this project checked these five books by hand and found misrepresented star ratings for 20% of them. The method reproduces that on the sample: one book in five, *IT*, diverges under both models. It doesn't generalise as a rate. Each model alone flags 60% of the sample, and on 909 poetry books the transformer flags 30%, because the share depends on r (above) and with five books a z-score is little more than a rank. A flag also says only that the reviews and the stars disagree, not which one is wrong.
 
 ## Stack
 
